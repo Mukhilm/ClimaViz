@@ -2,13 +2,15 @@
  * Created by Mukhil on 10/5/2016.
  */
 
+//sets up the rendering canvas for WebGL
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.2, 1000 );
-
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
+console.log("width: " + window.innerWidth);
 document.body.appendChild( renderer.domElement );
 
+//creates a point light source with white light
 var pointLight = new THREE.PointLight(0xFFFFFF);
 pointLight.position.x = 30;
 pointLight.position.y = 50;
@@ -22,15 +24,15 @@ pointLight2.position.z = -80;
 scene.add(pointLight2);
 
 
-var timePassed = 0;
+var timePassed = 0; //incremented each frame of the animation
 
 
-var glyphAustin = new THREE.Object3D();
-var pivotAustin = new THREE.Object3D();
+var glyphAustin = new THREE.Object3D();//object to hold each color bar for data metrics
+var pivotAustin = new THREE.Object3D();//object to hold the glyph and change the rotation axis
 
-var boxShape1 = new THREE.BoxGeometry(5, 1, 5);
-var boxMesh1 = new THREE.MeshLambertMaterial({color: 0xff2255});
-var temperatureAustin = new THREE.Mesh(boxShape1, boxMesh1);
+var boxShape1 = new THREE.BoxGeometry(5, 1, 5);//creates the rectangular shape of a prism
+var boxMesh1 = new THREE.MeshLambertMaterial({color: 0xff2255});//adds the texture illuminated by light
+var temperatureAustin = new THREE.Mesh(boxShape1, boxMesh1);//creates the rendered object
 
 var boxShape2 = new THREE.BoxGeometry(5, 1, 5);
 var boxMesh2 = new THREE.MeshLambertMaterial({color: 0xddee33});
@@ -43,24 +45,16 @@ var precipitationAustin = new THREE.Mesh(boxShape3, boxMesh3);
 precipitationAustin.position.x = 2.5;
 precipitationAustin.position.z = 5;
 
-//            var vector = new THREE.Geometry();
-//            vector.vertices.push(new THREE.Vector3(0,0,0), new THREE.Vector3(0,50,0));
-//
-//            var line = new THREE.Line(vector, new THREE.LineBasicMaterial({color: 0x000000}));
-//            line.position.x = (5.0/2.0);
-//            line.position.z = (5.0/2.0);
-
+//adds all three bars to the glyph
 glyphAustin.add(temperatureAustin);
 glyphAustin.add(humidityAustin);
 glyphAustin.add(precipitationAustin);
-//            glyphA.add(line);
 
-//            glyphA.geometry.applyMatrix( new THREE.Matrix4().setTranslation( 0, 10, 0 ) );
-
+//moves the rotation axes to the center
 pivotAustin.add(glyphAustin);
 glyphAustin.position.x = -(5.0/2.0);
 glyphAustin.position.z = -(5.0/2.0);
-scene.add(pivotAustin);
+scene.add(pivotAustin);//adds the object to the scene to be rendered
 
 
 
@@ -219,8 +213,8 @@ var controls = new THREE.OrbitControls(camera, renderer.domElement);
 
 //texture mapping function to create a plane geometry with a US map texture
 var loader = new THREE.TextureLoader();
-loader.load("usmap.png",
-    function (texture) {
+loader.load("usmap.png",//the image file used
+    function (texture) {//creates the plane object that the map will be placed on
         var mapGeometry = new THREE.PlaneGeometry(200,70,200);
         var mapMaterial = new THREE.MeshBasicMaterial({map: texture});
         var usMap = new THREE.Mesh(mapGeometry, mapMaterial);
@@ -230,20 +224,24 @@ loader.load("usmap.png",
     });
 
 
+//keeps the window full screen in the case it's resized
+window.addEventListener('resize', onWindowResize, false);
+
 //webGL rendering function containing animation implementation
 function render() {
     requestAnimationFrame(render);
 
+    //rotates each pivot slowly over time
     pivotAustin.rotation.y -= .001;
     pivotSanfrancisco.rotation.y -= .001;
     pivotChicago.rotation.y -= .001;
     pivotDenver.rotation.y -= .001;
     pivotMiami.rotation.y -= .001;
 
-    controls.update();
+    controls.update(); //updates the viewing angle as determined by the mouse
     timePassed += .01;
 
-
+    //call to animate each city
     animate_austin();
     animate_sanfrancisco();
     animate_chicago();
@@ -254,7 +252,14 @@ function render() {
 
 }
 
+//updates the size of the screen if the window is resized
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
 
+//each function will separately animate each city with climate data
 function animate_austin() {
     temperatureAustin.scale.y = 7.6*Math.pow(Math.sin(timePassed + .5), 2) + 17;
     temperatureAustin.position.y = .5*7.6*Math.pow(Math.sin(timePassed + .5), 2) + .5*16;
@@ -306,3 +311,4 @@ function animate_miami() {
 
 //call to render the current frame in browser
 render();
+
