@@ -1,4 +1,3 @@
-## Welcome to GitHub Pages
 # ClimaViz
 ## by Mukhil Murugasamy
 
